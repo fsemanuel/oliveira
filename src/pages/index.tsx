@@ -1,53 +1,34 @@
 "use client";
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ShoppingList from "./components/CardShoppingList";
+import axios from "axios";
 
 export default function Home() {
-  const [toDo, setToDo] = useState(false);
+  const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["get-orders"], queryFn: fetchOrders });
 
-  const listShopping = [
-    {
-      clientName: " Felipe Emanuel",
-      address: " Rua centro nº 10",
-      phone: " (19) 9 9999-9999",
-      paymentMethod: " Dinheiro",
-      productList: [
-        {
-          productName: "Macarrão",
-          quantity: "2kg",
-        },
-        {
-          productName: "Feijão",
-          quantity: "2kg",
-        },
-        {
-          productName: "Batata",
-          quantity: "2kg",
-        },
-        {
-          productName: "Peito de frango",
-          quantity: "2kg",
-        },
-        {
-          productName: "Leite",
-          quantity: "1L",
-        },
-      ],
-      note: "Trazer o peito de frando sem pele e o feijão sem pedra",
+  const mutation = useMutation({
+    mutationFn: confirmOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["get-orders"] });
     },
-    {
-      clientName: " Fernando Souza",
-      address: " Rua centro nº 10",
-      phone: " (19) 9 9999-9999",
-      paymentMethod: " Cartão",
-      productList: [
-        {
-          productName: "Leite",
-          quantity: "230L",
-        },
-      ],
-    },
-  ];
+    onError: console.log,
+  });
+
+  async function fetchOrders() {
+    const response = await axios.get(
+      "https://d741-2804-65d4-4c-c84e-d547-a58a-3c28-3993.ngrok-free.app/orders"
+    );
+    return response.data;
+  }
+
+  async function confirmOrder(id: string) {
+    await axios.put(
+      `https://d741-2804-65d4-4c-c84e-d547-a58a-3c28-3993.ngrok-free.app/orders/confirm/${id}`
+    );
+  }
+
+  const orderList = query.data;
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-[#F8F6F5]">
@@ -56,15 +37,17 @@ export default function Home() {
         <hr />
         <div className="w-full my-10 gap-2 bg-[#f7f2f0] rounded-md p-4">
           <ul className=" mt-8 grid grid-cols-2 gap-4">
-            {listShopping.map((c) => (
+            {orderList?.map((c) => (
               <ShoppingList
                 key={c?.phone}
                 clientName={c?.clientName}
                 phone={c?.phone}
                 address={c?.address}
                 paymentMethod={c?.paymentMethod}
-                productList={c?.productList}
+                items={c?.items}
                 note={c?.note}
+                status={c?.status}
+                onClick={() => mutation.mutate(c.id)}
               />
             ))}
           </ul>
