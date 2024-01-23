@@ -17,14 +17,14 @@ export default function Home() {
 
   async function fetchOrders() {
     const response = await axios.get(
-      "https://d741-2804-65d4-4c-c84e-d547-a58a-3c28-3993.ngrok-free.app/orders"
+      "https://317f-2804-65d4-4c-c84e-a100-c3d1-bdc3-8b40.ngrok-free.app/orders"
     );
     return response.data;
   }
 
   async function confirmOrder(id: string) {
     await axios.put(
-      `https://d741-2804-65d4-4c-c84e-d547-a58a-3c28-3993.ngrok-free.app/orders/confirm/${id}`
+      `https://317f-2804-65d4-4c-c84e-a100-c3d1-bdc3-8b40.ngrok-free.app/orders/confirm/${id}`
     );
   }
 
@@ -47,7 +47,9 @@ export default function Home() {
                 items={c?.items}
                 note={c?.note}
                 status={c?.status}
-                onClick={() => mutation.mutate(c.id)}
+                onClick={() => {
+                  mutation.mutate(c.id), window.print();
+                }}
               />
             ))}
           </ul>
