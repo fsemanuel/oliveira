@@ -3,9 +3,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ShoppingList from "./components/CardShoppingList";
 import axios from "axios";
 
+const client = axios.create({
+  baseURL: "http://localhost:3333",
+});
+
 export default function Home() {
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["get-orders"], queryFn: fetchOrders });
+  const query = useQuery({
+    queryKey: ["get-orders"],
+    queryFn: fetchOrders,
+    refetchInterval: 2000,
+  });
 
   const mutation = useMutation({
     mutationFn: confirmOrder,
@@ -16,16 +24,12 @@ export default function Home() {
   });
 
   async function fetchOrders() {
-    const response = await axios.get(
-      "https://317f-2804-65d4-4c-c84e-a100-c3d1-bdc3-8b40.ngrok-free.app/orders"
-    );
+    const response = await client.get("/orders");
     return response.data;
   }
 
   async function confirmOrder(id: string) {
-    await axios.put(
-      `https://317f-2804-65d4-4c-c84e-a100-c3d1-bdc3-8b40.ngrok-free.app/orders/confirm/${id}`
-    );
+    await client.put(`/orders/confirm/${id}`);
   }
 
   const orderList = query.data;
